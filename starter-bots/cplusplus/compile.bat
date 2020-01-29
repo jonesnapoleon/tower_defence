@@ -1,0 +1,1 @@
+g++ -Wall samplebot.cpp -o samplebot.exe
