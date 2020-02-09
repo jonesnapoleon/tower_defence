@@ -7,7 +7,7 @@ import java.util.List;
 public class GameState {
     protected Player[] players;
     protected CellStateContainer[][] gameMap;
-    protected GameDetails gameDetails;
+    public GameDetails gameDetails;
 
     public List<Player> getPlayers() {
         return new ArrayList<>(Arrays.asList(players));
