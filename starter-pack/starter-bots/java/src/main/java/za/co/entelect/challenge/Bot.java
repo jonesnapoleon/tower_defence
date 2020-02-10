@@ -68,13 +68,14 @@ public class Bot {
          * 8. Continue building tesla tower if everything is still nice.
          * 9. Activate Tesla Tower if energy sufficient (energy > 150). If things are just being too good, do the pro gamer move by activating it immediately.
          */
+        
         // If the enemy has more than 3 attack building on row, then block on the front and make attack building
         // Oh yeah, make a defense building, and make it double.
         for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
             int enemyAttackOnRow = getAllBuildingsForPlayer(PlayerType.B, b -> b.buildingType == BuildingType.ATTACK, i).size();
             int myDefenseOnRow = getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.DEFENSE, i).size();
 
-            if (enemyAttackOnRow > 3 && myDefenseOnRow <= 1) {
+            if (enemyAttackOnRow > 2 && myDefenseOnRow <= 1) {
                 if (canAffordBuilding(BuildingType.DEFENSE))
                     command = placeBuildingInRowFromFront(BuildingType.DEFENSE, i);
                 else
@@ -84,23 +85,20 @@ public class Bot {
         }
 
         //If the enemy has an attack building and I don't have a blocking wall, then block from the front.
-        for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
-            int enemyAttackOnRow = getAllBuildingsForPlayer(PlayerType.B, b -> b.buildingType == BuildingType.ATTACK, i).size();
-            int myDefenseOnRow = getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.DEFENSE, i).size();
+        if(command.equals("")){
+            for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
+                int enemyAttackOnRow = getAllBuildingsForPlayer(PlayerType.B, b -> b.buildingType == BuildingType.ATTACK, i).size();
+                int myDefenseOnRow = getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.DEFENSE, i).size();
 
-            if (enemyAttackOnRow > 0 && myDefenseOnRow <= 1) {
-                if (canAffordBuilding(BuildingType.DEFENSE))
-                    command = placeBuildingInRowFromFront(BuildingType.DEFENSE, i);
-                else
-                    command = "";
-                break;
+                if (enemyAttackOnRow > 0 && myDefenseOnRow <= 1) {
+                    if (canAffordBuilding(BuildingType.DEFENSE))
+                        command = placeBuildingInRowFromFront(BuildingType.DEFENSE, i);
+                    else
+                        command = "";
+                    break;
+                }
             }
         }
-
-        // If the enemy has more than one attack building in one lane, then prioritize on building more defence building on that row.
-        // if (command.equals("")) {
-
-        // }
 
         //If there is a row where I don't have energy and there is no enemy attack building, then build energy in the back row.
         if (command.equals("")) {
@@ -132,7 +130,16 @@ public class Bot {
                 if (getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.DEFENSE, i).size() == 0 && 
                     getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.ATTACK, i).size() > 0
                         && canAffordBuilding(BuildingType.DEFENSE)) {
-                    command = placeBuildingInRowFromFront(BuildingType.DEFENSE, i);
+                    command = placeBuildingInRowFromFront(BuildingType.DEFENSE, i);  
+                }
+            }
+        }
+        
+        // If everything goes very good and nais and we have more than 300 energy, then start tesla.
+        if (command.equals("") && myself.energy >= 300 && countBuilding(PlayerType.A, b -> b.buildingType == BuildingType.TESLA) < 2) {
+            for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
+                if(isCellEmpty(6, i)){ 
+                    command = buildCommand(6, i, BuildingType.TESLA);
                 }
             }
         }
@@ -146,42 +153,31 @@ public class Bot {
                 }
             }
         }
-
-        // If everything goes very good and nais and we have more than 200 energy, then maximize the backline attack.
-        if (command.equals("")) {
-            for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
-                if (getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.ATTACK, i).size() <= 1
-                        && myself.energy >= 200) {
-                    command = placeNonEnergyBuildingInRowFromBack(BuildingType.ATTACK, i);
-                }
-            }
-        }
-
+        
         // If backline attack is filled and we have enough energy to make Tesla Tower, then just do it *winks*
         if (command.equals("")) {
             /**
-             * note:we can only have maximum 2 tesla towers, and because i dont know how the heck they work
+             * note: we can only have maximum 2 tesla towers, and because i dont know how the heck they work
              *      and the documentation simply said "pReDeFINed pATteRn", i'll just assume
              *      that they would go bzz bzz in AoE (Area of Effect) of one grid horizontal-vertical-diagonal.
              *      So, putting that in mind, since the battlefield got 8 rows, better to place them on row 3 and 6.
              *      In the end, we need to strengthen the first and last row to balance things as they should be.
              */
             
-            if (myself.energy >= 300 && isCellEmpty(6,2)) {
-                command = buildCommand(6,2, BuildingType.TESLA);
-            } else if (myself.energy >= 300 && getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.TESLA, 2).size() == 0) {
+            // if (myself.energy >= 300 && isCellEmpty(6,2)) {
+            //     for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
+            //         if (getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.ATTACK, i).size() <= 1) {
+            //             command = placeNonEnergyBuildingInRowFromBack(BuildingType.ATTACK, i);
+            //         }
+            //     }
+            // }
+            // else 
+            if (myself.energy >= 300 && getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.TESLA, 2).size() == 0) {
                 command = buildCommand(6,2, BuildingType.DECONSTRUCT);
             }
             
         }
 
-        // if (isUnderAttack()) {
-        //     return defendRow();
-        // } else if (hasEnoughEnergyForMostExpensiveBuilding()) {
-        //     return buildRandom();
-        // } else {
-        //     return doNothingCommand();
-        // }
         return command;
     }
 
@@ -257,6 +253,17 @@ public class Bot {
                 .filter(filter)
                 .collect(Collectors.toList());
     }
+
+
+    private int countBuilding(PlayerType playerType, Predicate<Building> filter){
+        return gameState.getGameMap().stream()
+                .filter(c -> c.cellOwner == playerType)
+                .flatMap(c -> c.getBuildings().stream())
+                .filter(filter)
+                .collect(Collectors.toList())
+                .size();
+    }
+
 
     /**
      * Get the lane with most enemy attack building
