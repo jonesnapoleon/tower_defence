@@ -1,4 +1,0 @@
-The winner is: B - Enemy
-
-A - Jones- score:772 health:0
-B - Enemy- score:2725 health:90

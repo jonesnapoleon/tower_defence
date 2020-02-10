@@ -135,15 +135,6 @@ public class Bot {
             }
         }
         
-        // If everything goes very good and nais and we have more than 300 energy, then start tesla.
-        if (command.equals("") && myself.energy >= 300 && countBuilding(PlayerType.A, b -> b.buildingType == BuildingType.TESLA) < 2) {
-            for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
-                if(isCellEmpty(6, i)){ 
-                    command = buildCommand(6, i, BuildingType.TESLA);
-                }
-            }
-        }
-
         // If everything is balanced as everything should be, then build an attack building from the back.
         if (command.equals("")) {
             for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
@@ -154,6 +145,15 @@ public class Bot {
             }
         }
         
+        // If everything goes very good and nais and we have more than 300 energy, then start tesla.
+        if (command.equals("") && myself.energy >= 300 && countBuilding(PlayerType.A, b -> b.buildingType == BuildingType.TESLA) < 2) {
+            for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
+                if(isCellEmpty(6, i)){ 
+                    command = buildCommand(6, i, BuildingType.TESLA);
+                }
+            }
+        }
+
         // If backline attack is filled and we have enough energy to make Tesla Tower, then just do it *winks*
         if (command.equals("")) {
             /**

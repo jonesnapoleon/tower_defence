@@ -1,4 +1,0 @@
-The winner is: A - Awoo
-
-A - Awoo- score:4393 health:100
-B - Enemy- score:2204 health:0
