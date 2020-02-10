@@ -57,8 +57,9 @@ public class Bot {
         /**
          * New strategy :
          * Priority scale : Greedy on prioritizing making attack building which is concentrated on one lane, then defense.
-         * 0. Make the energy building first. Think of Plant vs Zombies. So you'll probably going to fill the first column with energy buildings.
-         * 1. Check for emptiest lane in placing the attack building.
+         * 0. Make the energy building first. Think of Plant vs Zombies *winks* *winks*
+         *    So you'll probably going to fill the first column with energy buildings.
+         * 1. Check for emptiest lane in placing the attack building. Comparing with reference-bot, you'll do this once the energy building are done.
          * 2. Prioritize on placing defence building on lane which enemy attack building has the most
          * 3. After that, prioritize on placing defence building on your attack lane.
          * 4. If everything is going good, do nothing to conserve energy.
@@ -66,8 +67,14 @@ public class Bot {
          * 6. Greedy Case 2 : Once Case 1 finished, conserve energy to place Tesla Tower.
          * 7. Situational : If there is a sudden burst of missiles, and iron curtain is ready, then activate iron curtain.
          * 8. Continue building tesla tower if everything is still nice.
-         * 9. Activate Tesla Tower if energy sufficient (energy > 150). If things are just being too good, do the pro gamer move by activating it immediately.
+         * 9. Activate Tesla Tower if energy sufficient (energy > 150).
+         *    If things are just being too good,
+         *    do the pro gamer move by activating it immediately (energy >= 10).
          */
+
+        // Saa.... hajimeru yo!
+
+        
         // If the enemy has more than 3 attack building on row, then block on the front and make attack building
         // Oh yeah, make a defense building, and make it double.
         for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
