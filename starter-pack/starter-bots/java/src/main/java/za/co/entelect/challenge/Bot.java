@@ -63,7 +63,7 @@ public class Bot {
          * 2. Prioritize on placing defence building on lane which enemy attack building has the most
          * 3. After that, prioritize on placing defence building on your attack lane.
          * 4. If everything is going good, do nothing to conserve energy.
-         * 5. Greedy Case 1 : Conserve the energy until you have 200 in your pockets, then fill the 2nd and 3rd column with attack building.
+         * 5. Greedy Case 1 : Conserve the energy until you have 200 in your pockets, then fill the 2nd column with attack building.
          * 6. Greedy Case 2 : Once Case 1 finished, conserve energy to place Tesla Tower.
          * 7. Situational : If there is a sudden burst of missiles, and iron curtain is ready, then activate iron curtain.
          * 8. Continue building tesla tower if everything is still nice.
@@ -72,13 +72,47 @@ public class Bot {
          *    do the pro gamer move by activating it immediately (energy >= 10).
          */
 
-        // If the enemy has more than 3 attack building on row, then block on the front and make attack building
+        // If the enemy has more than 1 attack building on row, then block on the front and make attack building
         // Oh yeah, make a defense building, and make it double.
         for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
             int enemyAttackOnRow = getAllBuildingsForPlayer(PlayerType.B, b -> b.buildingType == BuildingType.ATTACK, i).size();
             int myDefenseOnRow = getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.DEFENSE, i).size();
 
-            if (enemyAttackOnRow > 1 && myDefenseOnRow <= 1) {
+            if (enemyAttackOnRow >= 1 && myDefenseOnRow < 1) {
+                if (canAffordBuilding(BuildingType.DEFENSE))
+                    if (isCellEmpty(6, i)) {
+                        command = buildCommand(6, i, BuildingType.DEFENSE);
+                    }
+                else
+                    command = "";
+                break;
+            }
+        }
+
+        // Place attack building on the row with highest amount of enemy attack building
+        if(command.equals("")){
+            int i = 0;
+            int previous = 0;
+            int countNow = 0;
+            int selectedLane = 0;
+            for (i = 0; i < gameState.gameDetails.mapHeight; i++) {
+                int currentEnemyAttackOnRow = getAllBuildingsForPlayer(PlayerType.B, b -> b.buildingType == BuildingType.ATTACK, i).size();
+                countNow = currentEnemyAttackOnRow;
+                if (countNow >= previous) {
+                    selectedLane = i;
+                    previous = countNow;
+                }
+                
+            }
+            int enemyAttackOnRow = getAllBuildingsForPlayer(PlayerType.B, b -> b.buildingType == BuildingType.ATTACK,selectedLane).size();
+            int myDefenseOnRow = getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.DEFENSE, selectedLane).size();
+
+            if (enemyAttackOnRow > 0 && myDefenseOnRow >= 1) {
+                if (canAffordBuilding(BuildingType.ATTACK))
+                    command = placeBuildingInRowFromBack(BuildingType.ATTACK, selectedLane);
+                else 
+                    command = "";
+            } else if (enemyAttackOnRow > 0 && myDefenseOnRow < 2) {
                 if (canAffordBuilding(BuildingType.DEFENSE))
                     command = placeBuildingInRowFromFront(BuildingType.DEFENSE, i);
                 else
@@ -93,7 +127,7 @@ public class Bot {
                 int enemyAttackOnRow = getAllBuildingsForPlayer(PlayerType.B, b -> b.buildingType == BuildingType.ATTACK, i).size();
                 int myDefenseOnRow = getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.DEFENSE, i).size();
 
-                if (enemyAttackOnRow > 0 && myDefenseOnRow <= 1) {
+                if (enemyAttackOnRow > 0 && myDefenseOnRow <= 2) {
                     if (canAffordBuilding(BuildingType.DEFENSE))
                         command = placeBuildingInRowFromFront(BuildingType.DEFENSE, i);
                     else
@@ -110,9 +144,10 @@ public class Bot {
                 int myEnergyOnRow = getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.ENERGY, i).size();
 
                 if (enemyAttackOnRow == 0 && myEnergyOnRow == 0) {
-                    if (canAffordBuilding(BuildingType.ENERGY))
+                    if (canAffordBuilding(BuildingType.ENERGY)) {
                         command = placeBuildingInRowFromBack(BuildingType.ENERGY, i);
-                    break;
+                        break;
+                    }
                 }
             }
         }
@@ -147,6 +182,15 @@ public class Bot {
                 }
             }
         }
+
+        // If things go nice, starts attack building from the second layer
+        if(command.equals("")){
+            for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
+                if (getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.ATTACK, i).size() <= 1) {
+                    command = placeNonEnergyBuildingInRowFromBack(BuildingType.ATTACK, i);
+                }
+            }
+        }
         
         // If everything goes very good and nais and we have more than 300 energy, then start tesla.
         if (command.equals("") && myself.energy >= 180 && countBuilding(PlayerType.A, b -> b.buildingType == BuildingType.TESLA) < 2) {
@@ -167,13 +211,6 @@ public class Bot {
              *      In the end, we need to strengthen the first and last row to balance things as they should be.
              */
             
-            // if (myself.energy >= 300 && isCellEmpty(6,2)) {
-            //     for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
-            //         if (getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.ATTACK, i).size() <= 1) {
-            //             command = placeNonEnergyBuildingInRowFromBack(BuildingType.ATTACK, i);
-            //         }
-            //     }
-            // }
             // else 
             if (myself.energy >= 300 && getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.TESLA, 2).size() == 0) {
                 command = buildCommand(6,2, BuildingType.DECONSTRUCT);
@@ -390,6 +427,22 @@ public class Bot {
      **/
     private String placeBuildingInRowFromFront(BuildingType buildingType, int y) {
         for (int i = (gameState.gameDetails.mapWidth / 2) - 1; i >= 0; i--) {
+            if (isCellEmpty(i, y)) {
+                return buildCommand(i, y, buildingType);
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Place building in row y nearest to the front
+     *
+     * @param buildingType the building type
+     * @param y            the y
+     * @return the result
+     **/
+    private String placeBuildingInRowXColumnFromFront(BuildingType buildingType, int y, int back) {
+        for (int i = (gameState.gameDetails.mapWidth / 2) - 1 - back; i >= 0; i--) {
             if (isCellEmpty(i, y)) {
                 return buildCommand(i, y, buildingType);
             }
