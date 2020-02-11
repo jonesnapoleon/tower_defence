@@ -4,6 +4,6 @@
   "verbose-mode": true,
   "max-runtime-ms": 2000,
   "player-a": "./starter-bots/java",
-  "player-b": "./reference-bot/java",
+  "player-b": "./reference-bot/gradybot",
   "is-tournament-mode": false
 }
