@@ -78,7 +78,7 @@ public class Bot {
             int enemyAttackOnRow = getAllBuildingsForPlayer(PlayerType.B, b -> b.buildingType == BuildingType.ATTACK, i).size();
             int myDefenseOnRow = getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.DEFENSE, i).size();
 
-            if (enemyAttackOnRow > 2 && myDefenseOnRow <= 1) {
+            if (enemyAttackOnRow > 1 && myDefenseOnRow <= 1) {
                 if (canAffordBuilding(BuildingType.DEFENSE))
                     command = placeBuildingInRowFromFront(BuildingType.DEFENSE, i);
                 else
@@ -149,7 +149,7 @@ public class Bot {
         }
         
         // If everything goes very good and nais and we have more than 300 energy, then start tesla.
-        if (command.equals("") && myself.energy >= 300 && countBuilding(PlayerType.A, b -> b.buildingType == BuildingType.TESLA) < 2) {
+        if (command.equals("") && myself.energy >= 180 && countBuilding(PlayerType.A, b -> b.buildingType == BuildingType.TESLA) < 2) {
             for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
                 if(isCellEmpty(6, i)){ 
                     command = buildCommand(6, i, BuildingType.TESLA);
