@@ -7,5 +7,5 @@ public class Player {
     public int energy;
     public int health;
     public int hitsTaken;
-    public int score;
+    public int score;  
 }

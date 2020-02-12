@@ -54,23 +54,6 @@ public class Bot {
      **/
     public String run() {
         String command = "";
-        /**
-         * New strategy :
-         * Priority scale : Greedy on prioritizing making attack building which is concentrated on one lane, then defense.
-         * 0. Make the energy building first. Think of Plant vs Zombies *winks* *winks*
-         *    So you'll probably going to fill the first column with energy buildings.
-         * 1. Check for emptiest lane in placing the attack building. Comparing with reference-bot, you'll do this once the energy building are done.
-         * 2. Prioritize on placing defence building on lane which enemy attack building has the most
-         * 3. After that, prioritize on placing defence building on your attack lane.
-         * 4. If everything is going good, do nothing to conserve energy.
-         * 5. Greedy Case 1 : Conserve the energy until you have 200 in your pockets, then fill the 2nd column with attack building.
-         * 6. Greedy Case 2 : Once Case 1 finished, conserve energy to place Tesla Tower.
-         * 7. Situational : If there is a sudden burst of missiles, and iron curtain is ready, then activate iron curtain.
-         * 8. Continue building tesla tower if everything is still nice.
-         * 9. Activate Tesla Tower if energy sufficient (energy > 150).
-         *    If things are just being too good,
-         *    do the pro gamer move by activating it immediately (energy >= 10).
-         */
 
         // If the enemy has more than 1 attack building on row, then block on the front and make attack building
         // Oh yeah, make a defense building, and make it double.
@@ -121,21 +104,6 @@ public class Bot {
             }
         }
 
-        //If the enemy has an attack building and I don't have a blocking wall, then block from the front.
-        if(command.equals("")){
-            for (int i = 0; i < gameState.gameDetails.mapHeight; i++) {
-                int enemyAttackOnRow = getAllBuildingsForPlayer(PlayerType.B, b -> b.buildingType == BuildingType.ATTACK, i).size();
-                int myDefenseOnRow = getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.DEFENSE, i).size();
-
-                if (enemyAttackOnRow > 0 && myDefenseOnRow <= 2) {
-                    if (canAffordBuilding(BuildingType.DEFENSE))
-                        command = placeBuildingInRowFromFront(BuildingType.DEFENSE, i);
-                    else
-                        command = "";
-                    break;
-                }
-            }
-        }
 
         //If there is a row where I don't have energy and there is no enemy attack building, then build energy in the back row.
         if (command.equals("")) {
@@ -203,15 +171,7 @@ public class Bot {
 
         // If backline attack is filled and we have enough energy to make Tesla Tower, then just do it *winks*
         if (command.equals("")) {
-            /**
-             * note: we can only have maximum 2 tesla towers, and because i dont know how the heck they work
-             *      and the documentation simply said "pReDeFINed pATteRn", i'll just assume
-             *      that they would go bzz bzz in AoE (Area of Effect) of one grid horizontal-vertical-diagonal.
-             *      So, putting that in mind, since the battlefield got 8 rows, better to place them on row 3 and 6.
-             *      In the end, we need to strengthen the first and last row to balance things as they should be.
-             */
             
-            // else 
             if (myself.energy >= 300 && getAllBuildingsForPlayer(PlayerType.A, b -> b.buildingType == BuildingType.TESLA, 2).size() == 0) {
                 command = buildCommand(6,2, BuildingType.DECONSTRUCT);
             }
