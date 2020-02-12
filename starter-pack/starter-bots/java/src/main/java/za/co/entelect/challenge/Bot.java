@@ -100,7 +100,6 @@ public class Bot {
                     command = placeBuildingInRowFromFront(BuildingType.DEFENSE, i);
                 else
                     command = "";
-                break;
             }
         }
 
